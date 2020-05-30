@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+    tags:
+      - v*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup Docker Buildx
+        uses: crazy-max/ghaction-docker-buildx@v1.3.0
+        with:
+          version: latest
+
+      - name: Log into registry
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u haamutech --password-stdin
+
+      - name: Build and push multiplatform Docker images
+        run: |
+          IMAGE_ID=${{ github.repository }}
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "master" ] && VERSION=latest
+
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+
+          docker buildx build \
+            -t $IMAGE_ID:$VERSION \
+            --platform linux/amd64,linux/arm/v7 \
+            --push \
+            .
