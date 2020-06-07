@@ -52,7 +52,7 @@ ENV POSTGIS 3
 RUN set -ex; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
-        wget ca-certificates "postgresql-$PG_MAJOR" "postgresql-$PG_MAJOR-postgis-$POSTGIS" \
+        wget ca-certificates "postgresql-$PG_MAJOR" "postgresql-$PG_MAJOR-postgis-$POSTGIS" postgis \
     ; \
     wget -O /usr/local/bin/docker-entrypoint.sh "https://raw.githubusercontent.com/docker-library/postgres/master/$PG_MAJOR/docker-entrypoint.sh"; \
     chmod +x /usr/local/bin/docker-entrypoint.sh; \
